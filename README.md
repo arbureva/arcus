@@ -211,6 +211,7 @@ Runnable examples live under [`example/`](example/):
 - [`example/agent-multi`](example/agent-multi) — multi-agent coordination: a specialist wrapped by `agent.AsTool`.
 - [`example/mcp`](example/mcp) — an agent driving the MCP filesystem server over stdio.
 - [`example/skill-toolbox`](example/skill-toolbox) — skills loaded from `SKILL.md` plus toolbox progressive disclosure.
+- [`example/http`](example/http) — the integration template: ice-adk inside an HTTP service. An OpenAI-compatible layer (`/v1/chat/completions` — point Cherry Studio, LobeChat, or any OpenAI client at it; the "model" name selects the service) plus a session-owning API, four services (skills-only, cli-only, mcp-only, multi-agent team), config-file startup, SSE streaming. Start here if you're wiring the SDK into your own backend.
 
 ## 🗺 Roadmap
 

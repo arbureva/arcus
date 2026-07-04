@@ -1,0 +1,9 @@
+{
+  "addr": ":8080",
+  "api_key": "test",
+  "base_url": "http://studio:11434/v1",
+  "model": "gpt-oss:20b",
+  "skills_dir": "example/http/skills",
+  "mcp": [
+  ]
+}

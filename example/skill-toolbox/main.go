@@ -31,7 +31,7 @@ type wordCountArgs struct {
 func main() {
 	// Skills load from disk: every subdirectory with a SKILL.md becomes one
 	// skill (front-matter -> Name/Description, body -> Instructions).
-	skills, err := skill.LoadDir("example/skill-toolbox/skills")
+	skills, err := skill.LoadDir("skills")
 	if err != nil {
 		panic(err)
 	}
@@ -85,7 +85,7 @@ func main() {
 		Model: "gpt-oss:20b",
 		Messages: []openai.Message{
 			openai.SystemMessage("You draft WeChat articles. Consult your toolbox for house style and measurement tools before answering."),
-			openai.UserMessage("为「用 Go 写一个零依赖 LLM SDK」写一段公众号文章开头，1000字，多次调用工具，自己多思考几轮，记得输出文章给我"),
+			openai.UserMessage("为「用 Go 写一个零依赖 LLM SDK」写一段公众号文章开头，并给出字数。"),
 		},
 	})
 	if err != nil {

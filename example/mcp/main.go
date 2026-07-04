@@ -35,7 +35,8 @@ func main() {
 		panic(err)
 	}
 	defer srv.Close()
-	fmt.Printf("connected: %s %s (protocol %s)\n", srv.ServerInfo().Name, srv.ServerInfo().Version, srv.NegotiatedVersion())
+	fmt.Printf("connected: %s %s (protocol %s)\n",
+		srv.ServerInfo().Name, srv.ServerInfo().Version, srv.NegotiatedVersion())
 
 	// ToolSet lists the server's tools once and wraps them into a *tool.Set —
 	// which already satisfies agent.Tools.
@@ -52,7 +53,7 @@ func main() {
 		panic(err)
 	}
 
-	bot := agent.New(cli, agent.WithTools(tools), agent.WithMaxSteps(100))
+	bot := agent.New(cli, agent.WithTools(tools), agent.WithMaxSteps(10))
 
 	system := "You have filesystem tools. Be precise and read before you claim."
 	if extra := srv.Instructions(); extra != "" {

@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os/exec"
 	"strings"
@@ -183,11 +182,10 @@ func (c *command) run(ctx context.Context, binary string, argv []string, stdin s
 	}
 
 	switch {
-	case errors.Is(ctx.Err(), context.DeadlineExceeded):
+	case ctx.Err() == context.DeadlineExceeded:
 		return tool.Errf("command timed out after %s\n%s", c.timeout, out)
 	case err != nil:
-		var ee *exec.ExitError
-		if errors.As(err, &ee) {
+		if ee, ok := err.(*exec.ExitError); ok {
 			return tool.Errf("exit status %d\n%s", ee.ExitCode(), out)
 		}
 		return tool.Errf("command failed to start: %v", err)

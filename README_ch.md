@@ -211,6 +211,7 @@ git := cli.Command("git", "检查仓库。",
 - [`example/agent-multi`](example/agent-multi) —— 多 Agent 协同：用 `agent.AsTool` 包装专家 Agent。
 - [`example/mcp`](example/mcp) —— Agent 通过 stdio 驱动 MCP 文件系统服务器。
 - [`example/skill-toolbox`](example/skill-toolbox) —— 从 `SKILL.md` 加载 skill，配合 toolbox 渐进式披露。
+- [`example/http`](example/http) —— 接入模板：在 HTTP 服务中使用 ice-adk。标准 OpenAI 兼容层（`/v1/chat/completions`，Cherry Studio、LobeChat 等现成客户端直连，"模型名"即服务路由）+ 服务端管会话的自有 API，四个服务（只挂 Skills / 只挂 CLI / 只挂 MCP / 多 Agent 协同）、配置文件启动、SSE 流式。想把 SDK 接进自己后端的，从这里开始抄。
 
 ## 🗺 路线图
 
