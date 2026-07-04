@@ -56,6 +56,12 @@ Requires Go 1.25+.
 | `pkg/adapter` | Neutral envelopes — `Request`, `MessageAdapter`, `ChunkMessageAdapter`, and the `Provider` constants. |
 | `pkg/openai` · `pkg/anthropic` · `pkg/deepseek` | Native protocol clients, usable on their own. |
 | `pkg/tool` | Provider-agnostic tool abstraction — `Tool`, `Func`, `Reflect`, `Set`, `Result`. |
+| `pkg/agent` | The agent loop — `Run` / `RunStream`, hooks, sub-agents via `AsTool`. Imports no provider package. |
+| `pkg/agent/transcripts/{openai,anthropic,deepseek}` | Native-message transcripts. Blank-import to enable; each registers itself from `init()`. |
+| `pkg/toolbox` | Progressive disclosure — fold tool groups behind one meta-tool the model opens on demand. |
+| `pkg/skill` | Skills — instruction packs with optional tools, from code (`skill.New`) or `SKILL.md` directories (`skill.LoadDir`). |
+| `pkg/mcp` | MCP client (stdio & Streamable HTTP) — remote tools surfaced as ordinary `tool.Tool` values. |
+| `pkg/cli` | Command-line programs as tools — `cli.Command` (argv, allowlisted) and `cli.Shell`. |
 | `pkg/ecode` | Shared sentinel errors. |
 
 ## 🚀 Quick start
@@ -141,6 +147,59 @@ for _, call := range out.ToolCalls {
 
 `chat.Result` normalizes tool calls into `[]chat.ToolCall` for every provider, so your dispatch loop is identical across backends. Only the follow-up message reconstruction is provider-shaped (OpenAI/DeepSeek `tool` messages vs. Anthropic `tool_use` / `tool_result` blocks).
 
+### Agent
+
+Or skip the manual loop entirely. `pkg/agent` runs the call → dispatch → append cycle until the model stops asking for tools. Message history lives in a **Transcript** — a per-provider implementation that stores *native* messages (so Anthropic thinking blocks, DeepSeek `reasoning_content`, and tool-call turns all round-trip exactly), registered the same way chat drivers are:
+
+```go
+import (
+    "github.com/Arbureva/ice-adk/pkg/agent"
+    _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai" // like drivers: blank-import to enable
+)
+
+bot := agent.New(cli, agent.WithTools(tools), agent.WithMaxSteps(8))
+
+tr, _ := agent.NewTranscript(adapter.OpenAI, &openai.Request{
+    Model:    "gpt-4o",
+    Messages: []openai.Message{openai.SystemMessage("Be terse.")},
+})
+
+tr.User("What's 2+2, and what time is it?")
+out, _ := bot.Run(ctx, tr)
+fmt.Println(out.Text()) // out.Steps / out.Usage hold the full trace
+```
+
+You always know exactly which native types you injected — the seed request is yours, and `tr.Messages()` hands the history back in the provider's own message type. `agent.RunStream` does the same loop over the normalized chunk channel, emitting `tool_result` chunks between turns.
+
+**Multi-agent** is one line: `agent.AsTool(name, desc, subAgent, seedFn)` wraps a specialist agent as a `tool.Tool`; every delegation gets a fresh transcript from `seedFn`, so contexts stay isolated.
+
+### Progressive disclosure, skills, MCP, CLI
+
+Everything above the loop is still just `tool.Tool`:
+
+```go
+// Fold tool groups behind one meta-tool; the model opens what it needs.
+box := toolbox.New().
+    Add(clock).                                  // always visible
+    Namespace("git", "Read-only git inspection", // folded until opened
+        toolbox.Tools(gitTool), toolbox.Instructions("Prefer --stat over full diffs.")).
+    AddSkills(skills)                            // each skill folds into its own namespace
+session := box.Clone()                           // per-conversation open/closed state
+bot := agent.New(cli, agent.WithTools(session))  // *toolbox.Box satisfies agent.Tools
+
+// Skills: instruction packs, from code or from SKILL.md directories.
+skills, _ := skill.LoadDir("skills") // each subdir with a SKILL.md becomes one skill
+
+// MCP servers: remote tools indistinguishable from local ones.
+srv, _ := mcp.Dial(ctx, mcp.Stdio("npx", "-y", "@modelcontextprotocol/server-filesystem", "."))
+defer srv.Close()
+remote, _ := srv.ToolSet(ctx) // *tool.Set — plug straight into an agent
+
+// Command-line programs: argv in, stdout/stderr back, no shell in between.
+git := cli.Command("git", "Inspect the repo.",
+    cli.AllowFirstArg("status", "log", "diff"), cli.Timeout(30*time.Second))
+```
+
 ## 📂 Examples
 
 Runnable examples live under [`example/`](example/):
@@ -148,19 +207,25 @@ Runnable examples live under [`example/`](example/):
 - [`example/chat`](example/chat) — non-streaming chat, one file per provider.
 - [`example/chat-stream`](example/chat-stream) — streaming, one file per provider.
 - [`example/chat-tool`](example/chat-tool) — the two-turn tool-calling loop, one file per provider.
+- [`example/agent`](example/agent) — an interactive REPL around `agent.Run`, with hooks narrating every tool round-trip.
+- [`example/agent-multi`](example/agent-multi) — multi-agent coordination: a specialist wrapped by `agent.AsTool`.
+- [`example/mcp`](example/mcp) — an agent driving the MCP filesystem server over stdio.
+- [`example/skill-toolbox`](example/skill-toolbox) — skills loaded from `SKILL.md` plus toolbox progressive disclosure.
 
 ## 🗺 Roadmap
 
-IceADK aims to be a complete, standard ADK for Go. The foundation is in place; the higher-level capabilities all wrap the existing `tool.Tool` interface and `chat` entry point, so adopting them requires no change to code already written against IceADK.
+IceADK aims to be a complete, standard ADK for Go. Every higher-level capability wraps the same `tool.Tool` interface and `chat` entry point — adopting them requires no change to code already written against IceADK.
 
 - [x] Native provider clients — OpenAI · Anthropic · DeepSeek
 - [x] Unified chat entry point with driver registry
 - [x] Streaming with normalized chunks
 - [x] Tool calling
-- [ ] **Agent** — a ReAct-style loop with state management on top of the tool layer
-- [ ] **MCP** — Model Context Protocol tools as first-class `tool.Tool` implementations
-- [ ] **Skills** — packaged, reusable capabilities composed from tools and prompts
-- [ ] **CLI** — a command-line driver for running and inspecting agents and tools
+- [x] **Agent** — the tool-calling loop with native-message transcripts, hooks, streaming, and sub-agents (`pkg/agent`)
+- [x] **MCP** — Model Context Protocol tools as first-class `tool.Tool` values, stdio & Streamable HTTP (`pkg/mcp`)
+- [x] **Skills** — instruction packs with tools, from code or `SKILL.md` directories (`pkg/skill`), foldable via `pkg/toolbox`
+- [x] **CLI** — command-line programs as tools (`pkg/cli`), plus a REPL example for running and inspecting agents
+- [ ] Structured output helpers
+- [ ] More providers (Gemini, Qwen, …)
 
 ## 📄 License
 

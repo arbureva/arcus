@@ -56,6 +56,12 @@ go get github.com/Arbureva/ice-adk
 | `pkg/adapter` | 中立信封——`Request`、`MessageAdapter`、`ChunkMessageAdapter` 以及 `Provider` 常量。 |
 | `pkg/openai` · `pkg/anthropic` · `pkg/deepseek` | 原生协议客户端，可独立使用。 |
 | `pkg/tool` | 与厂商无关的工具抽象——`Tool`、`Func`、`Reflect`、`Set`、`Result`。 |
+| `pkg/agent` | Agent 循环——`Run` / `RunStream`、钩子、通过 `AsTool` 实现子 Agent。不导入任何厂商包。 |
+| `pkg/agent/transcripts/{openai,anthropic,deepseek}` | 原生消息 Transcript。空白导入即启用，各自在 `init()` 中自注册。 |
+| `pkg/toolbox` | 渐进式披露——把成组工具折叠在一个元工具背后，模型按需打开。 |
+| `pkg/skill` | Skills——带可选工具的指令包，可用代码构建（`skill.New`）或从 `SKILL.md` 目录加载（`skill.LoadDir`）。 |
+| `pkg/mcp` | MCP 客户端（stdio 与 Streamable HTTP）——远程工具以普通 `tool.Tool` 的形态呈现。 |
+| `pkg/cli` | 把命令行程序变成工具——`cli.Command`（argv 数组、可加子命令白名单）与 `cli.Shell`。 |
 | `pkg/ecode` | 共享的哨兵错误。 |
 
 ## 🚀 快速上手
@@ -141,6 +147,59 @@ for _, call := range out.ToolCalls {
 
 `chat.Result` 会把所有厂商的工具调用都归一成 `[]chat.ToolCall`，因此你的派发循环在各后端之间完全一致。只有“回填消息的重建”是厂商相关的（OpenAI/DeepSeek 用 `tool` 角色消息，Anthropic 用 `tool_use` / `tool_result` 内容块）。
 
+### Agent
+
+也可以完全省掉手写循环。`pkg/agent` 会自动执行“请求 → 派发工具 → 回填结果”的循环，直到模型不再调用工具。消息历史保存在 **Transcript** 中——按厂商各自实现、存放**原生**消息类型（Anthropic 的 thinking 块、DeepSeek 的 `reasoning_content`、工具调用轮次都能原样往返），注册方式与 chat 驱动完全一致：
+
+```go
+import (
+    "github.com/Arbureva/ice-adk/pkg/agent"
+    _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai" // 与驱动同款：空白导入即启用
+)
+
+bot := agent.New(cli, agent.WithTools(tools), agent.WithMaxSteps(8))
+
+tr, _ := agent.NewTranscript(adapter.OpenAI, &openai.Request{
+    Model:    "gpt-4o",
+    Messages: []openai.Message{openai.SystemMessage("回答尽量简短。")},
+})
+
+tr.User("2+2 等于几？现在几点？")
+out, _ := bot.Run(ctx, tr)
+fmt.Println(out.Text()) // out.Steps / out.Usage 保留完整轨迹
+```
+
+你始终清楚自己注入的是哪家的原生类型——种子请求由你构造，`tr.Messages()` 也会以该厂商自己的消息类型交还全部历史。`agent.RunStream` 在归一化 chunk 通道上跑同一个循环，并在轮次之间发出 `tool_result` chunk。
+
+**多 Agent 协同**只需一行：`agent.AsTool(name, desc, subAgent, seedFn)` 把专家 Agent 包装成 `tool.Tool`；每次委派都会通过 `seedFn` 拿到全新的 Transcript，上下文彼此隔离。
+
+### 渐进式披露、Skills、MCP、CLI
+
+循环之上的一切依然只是 `tool.Tool`：
+
+```go
+// 把成组工具折叠在一个元工具背后，模型按需打开。
+box := toolbox.New().
+    Add(clock).                                  // 常驻可见
+    Namespace("git", "只读 git 检查",             // 打开之前对模型不可见
+        toolbox.Tools(gitTool), toolbox.Instructions("优先使用 --stat 而非完整 diff。")).
+    AddSkills(skills)                            // 每个 skill 折叠成独立命名空间
+session := box.Clone()                           // 每个会话一份打开/折叠状态
+bot := agent.New(cli, agent.WithTools(session))  // *toolbox.Box 直接满足 agent.Tools
+
+// Skills：指令包，代码构建或从 SKILL.md 目录加载。
+skills, _ := skill.LoadDir("skills") // 每个含 SKILL.md 的子目录即一个 skill
+
+// MCP 服务器：远程工具与本地工具毫无二致。
+srv, _ := mcp.Dial(ctx, mcp.Stdio("npx", "-y", "@modelcontextprotocol/server-filesystem", "."))
+defer srv.Close()
+remote, _ := srv.ToolSet(ctx) // *tool.Set——直接塞给 Agent
+
+// 命令行程序：argv 进、stdout/stderr 回，中间没有 shell。
+git := cli.Command("git", "检查仓库。",
+    cli.AllowFirstArg("status", "log", "diff"), cli.Timeout(30*time.Second))
+```
+
 ## 📂 示例
 
 可运行示例位于 [`example/`](example/) 下：
@@ -148,19 +207,25 @@ for _, call := range out.ToolCalls {
 - [`example/chat`](example/chat) —— 非流式对话，每个厂商一个文件。
 - [`example/chat-stream`](example/chat-stream) —— 流式，每个厂商一个文件。
 - [`example/chat-tool`](example/chat-tool) —— 两轮工具调用循环，每个厂商一个文件。
+- [`example/agent`](example/agent) —— 围绕 `agent.Run` 的交互式 REPL，钩子实时播报每一次工具往返。
+- [`example/agent-multi`](example/agent-multi) —— 多 Agent 协同：用 `agent.AsTool` 包装专家 Agent。
+- [`example/mcp`](example/mcp) —— Agent 通过 stdio 驱动 MCP 文件系统服务器。
+- [`example/skill-toolbox`](example/skill-toolbox) —— 从 `SKILL.md` 加载 skill，配合 toolbox 渐进式披露。
 
 ## 🗺 路线图
 
-IceADK 致力于成为一个完整、标准的 Go 语言 ADK。基础能力已经就位；上层能力都会包裹现有的 `tool.Tool` 接口与 `chat` 入口，因此引入它们无需改动已基于 IceADK 写好的代码。
+IceADK 致力于成为一个完整、标准的 Go 语言 ADK。所有上层能力都包裹同一个 `tool.Tool` 接口与 `chat` 入口——引入它们无需改动已基于 IceADK 写好的代码。
 
 - [x] 原生厂商客户端 —— OpenAI · Anthropic · DeepSeek
 - [x] 带驱动注册的统一 chat 入口
 - [x] 归一化 chunk 的流式
 - [x] 工具调用
-- [ ] **Agent** —— 在工具层之上实现带状态管理的 ReAct 循环
-- [ ] **MCP** —— 将 Model Context Protocol 工具作为一等的 `tool.Tool` 实现接入
-- [ ] **Skills** —— 由工具与提示词组合而成、可复用的封装能力
-- [ ] **Cli** —— 用于运行、观察 Agent 与工具的命令行驱动
+- [x] **Agent** —— 带原生消息 Transcript、钩子、流式与子 Agent 的工具调用循环（`pkg/agent`）
+- [x] **MCP** —— MCP 工具作为一等 `tool.Tool` 接入，支持 stdio 与 Streamable HTTP（`pkg/mcp`）
+- [x] **Skills** —— 带工具的指令包，代码构建或 `SKILL.md` 目录加载（`pkg/skill`），可经 `pkg/toolbox` 折叠
+- [x] **Cli** —— 命令行程序即工具（`pkg/cli`），另附用于运行与观察 Agent 的 REPL 示例
+- [ ] 结构化输出辅助
+- [ ] 更多厂商（Gemini、Qwen……）
 
 ## 📄 许可证
 
