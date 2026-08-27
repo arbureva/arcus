@@ -36,7 +36,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/tool"
 )
 
 // Skill is a reusable capability: metadata the model always sees, instructions

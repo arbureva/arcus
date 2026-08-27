@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/anthropic"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/deepseek"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
+	"github.com/arbureva/arcus/pkg/chat"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/anthropic"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/deepseek"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 )
 
 func main() {

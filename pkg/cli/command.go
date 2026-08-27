@@ -25,7 +25,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/tool"
 )
 
 const (

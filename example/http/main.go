@@ -1,4 +1,4 @@
-// Command http 演示如何把 ice-adk 接进你自己的 HTTP 服务。
+// Command http 演示如何把 arcus 接进你自己的 HTTP 服务。
 //
 // 对外暴露两层 API，对应两种接入姿势：
 //
@@ -68,18 +68,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/cli"
-	"github.com/Arbureva/ice-adk/pkg/mcp"
-	"github.com/Arbureva/ice-adk/pkg/openai"
-	"github.com/Arbureva/ice-adk/pkg/skill"
-	"github.com/Arbureva/ice-adk/pkg/tool"
-	"github.com/Arbureva/ice-adk/pkg/toolbox"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/cli"
+	"github.com/arbureva/arcus/pkg/mcp"
+	"github.com/arbureva/arcus/pkg/openai"
+	"github.com/arbureva/arcus/pkg/skill"
+	"github.com/arbureva/arcus/pkg/tool"
+	"github.com/arbureva/arcus/pkg/toolbox"
 
-	_ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
+	_ "github.com/arbureva/arcus/pkg/agent/transcripts/openai"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 )
 
 // ═════════════════════════════ 配置 ═════════════════════════════

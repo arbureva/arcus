@@ -1,10 +1,10 @@
 <div align="center">
 
-# ❄️ IceADK
+# ❄️ Arcus ADK
 
 **A standard, easy-to-use Agent Development Kit for Go.**
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/Arbureva/ice-adk.svg)](https://pkg.go.dev/github.com/Arbureva/ice-adk) [![Go Version](https://img.shields.io/github/go-mod/go-version/Arbureva/ice-adk)](go.mod) [![Go Report Card](https://goreportcard.com/badge/github.com/Arbureva/ice-adk)](https://goreportcard.com/report/github.com/Arbureva/ice-adk) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Dependencies](https://img.shields.io/badge/dependencies-0-success) ![Status](https://img.shields.io/badge/status-active%20development-orange)
+[![Go Reference](https://pkg.go.dev/badge/github.com/arbureva/arcus.svg)](https://pkg.go.dev/github.com/arbureva/arcus) [![Go Version](https://img.shields.io/github/go-mod/go-version/Arbureva/arcus)](go.mod) [![Go Report Card](https://goreportcard.com/badge/github.com/arbureva/arcus)](https://goreportcard.com/report/github.com/arbureva/arcus) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Dependencies](https://img.shields.io/badge/dependencies-0-success) ![Status](https://img.shields.io/badge/status-active%20development-orange)
 
 ![OpenAI](https://img.shields.io/badge/OpenAI-supported-412991) ![Anthropic](https://img.shields.io/badge/Anthropic-supported-D4A27F) ![DeepSeek](https://img.shields.io/badge/DeepSeek-supported-4D6BFE)
 
@@ -14,7 +14,7 @@
 
 ---
 
-IceADK gives Go applications one clean way to talk to large language models. It pairs **native, protocol-faithful clients** for each provider with a **unified chat layer** that normalizes requests, responses, streaming, and tool calls — so business code is written once and runs against OpenAI, Anthropic, or DeepSeek without change.
+Arcus gives Go applications one clean way to talk to large language models. It pairs **native, protocol-faithful clients** for each provider with a **unified chat layer** that normalizes requests, responses, streaming, and tool calls — so business code is written once and runs against OpenAI, Anthropic, or DeepSeek without change.
 
 It is built on the `database/sql` driver model: the core imports no provider package, and applications wire providers in with blank imports. The whole kit is **standard-library only — zero third-party dependencies.**
 
@@ -30,7 +30,7 @@ out, _ := chat.Result(msg)
 fmt.Println(out.Text)
 ```
 
-## ✨ Why IceADK
+## ✨ Why Arcus
 
 - **Native packages, no leaky abstraction.** `pkg/openai`, `pkg/anthropic`, and `pkg/deepseek` each speak their wire protocol directly (content blocks, SSE events, `reasoning_content`, …). Use them standalone, or through the unified layer — your choice, not the framework's.
 - **One entry point, three providers.** `pkg/chat` routes a request by `Provider` and hands back a normalized result. Switching models is a config change, not a rewrite.
@@ -42,7 +42,7 @@ fmt.Println(out.Text)
 ## 📦 Install
 
 ```bash
-go get github.com/Arbureva/ice-adk
+go get github.com/arbureva/arcus
 ```
 
 Requires Go 1.25+.
@@ -72,13 +72,13 @@ Enable each backend with a blank import, then `Use` it:
 
 ```go
 import (
-    "github.com/Arbureva/ice-adk/pkg/adapter"
-    "github.com/Arbureva/ice-adk/pkg/chat"
-    "github.com/Arbureva/ice-adk/pkg/openai"
+    "github.com/arbureva/arcus/pkg/adapter"
+    "github.com/arbureva/arcus/pkg/chat"
+    "github.com/arbureva/arcus/pkg/openai"
 
-    _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"   // registers the openai driver
-    _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/anthropic"
-    _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/deepseek"
+    _ "github.com/arbureva/arcus/pkg/chat/drivers/openai"   // registers the openai driver
+    _ "github.com/arbureva/arcus/pkg/chat/drivers/anthropic"
+    _ "github.com/arbureva/arcus/pkg/chat/drivers/deepseek"
 )
 
 cli := chat.New()
@@ -153,8 +153,8 @@ Or skip the manual loop entirely. `pkg/agent` runs the call → dispatch → app
 
 ```go
 import (
-    "github.com/Arbureva/ice-adk/pkg/agent"
-    _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai" // like drivers: blank-import to enable
+    "github.com/arbureva/arcus/pkg/agent"
+    _ "github.com/arbureva/arcus/pkg/agent/transcripts/openai" // like drivers: blank-import to enable
 )
 
 bot := agent.New(cli, agent.WithTools(tools), agent.WithMaxSteps(8))
@@ -211,11 +211,11 @@ Runnable examples live under [`example/`](example/):
 - [`example/agent-multi`](example/agent-multi) — multi-agent coordination: a specialist wrapped by `agent.AsTool`.
 - [`example/mcp`](example/mcp) — an agent driving the MCP filesystem server over stdio.
 - [`example/skill-toolbox`](example/skill-toolbox) — skills loaded from `SKILL.md` plus toolbox progressive disclosure.
-- [`example/http`](example/http) — the integration template: ice-adk inside an HTTP service. An OpenAI-compatible layer (`/v1/chat/completions` — point Cherry Studio, LobeChat, or any OpenAI client at it; the "model" name selects the service) plus a session-owning API, four services (skills-only, cli-only, mcp-only, multi-agent team), config-file startup, SSE streaming. Start here if you're wiring the SDK into your own backend.
+- [`example/http`](example/http) — the integration template: arcus inside an HTTP service. An OpenAI-compatible layer (`/v1/chat/completions` — point Cherry Studio, LobeChat, or any OpenAI client at it; the "model" name selects the service) plus a session-owning API, four services (skills-only, cli-only, mcp-only, multi-agent team), config-file startup, SSE streaming. Start here if you're wiring the SDK into your own backend.
 
 ## 🗺 Roadmap
 
-IceADK aims to be a complete, standard ADK for Go. Every higher-level capability wraps the same `tool.Tool` interface and `chat` entry point — adopting them requires no change to code already written against IceADK.
+Arcus aims to be a complete, standard ADK for Go. Every higher-level capability wraps the same `tool.Tool` interface and `chat` entry point — adopting them requires no change to code already written against Arcus.
 
 - [x] Native provider clients — OpenAI · Anthropic · DeepSeek
 - [x] Unified chat entry point with driver registry

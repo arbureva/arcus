@@ -12,16 +12,16 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/openai"
-	"github.com/Arbureva/ice-adk/pkg/skill"
-	"github.com/Arbureva/ice-adk/pkg/tool"
-	"github.com/Arbureva/ice-adk/pkg/toolbox"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/openai"
+	"github.com/arbureva/arcus/pkg/skill"
+	"github.com/arbureva/arcus/pkg/tool"
+	"github.com/arbureva/arcus/pkg/toolbox"
 
-	_ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
+	_ "github.com/arbureva/arcus/pkg/agent/transcripts/openai"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 )
 
 type wordCountArgs struct {

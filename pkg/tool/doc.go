@@ -1,4 +1,4 @@
-// Package tool is IceADK's single tool abstraction. It is deliberately small:
+// Package tool is Arcus's single tool abstraction. It is deliberately small:
 // one interface (Tool), one built-in implementation (Func, name + schema +
 // handler), a Result type, an ordered Set registry, and a dependency-free JSON
 // Schema reflector (Reflect).

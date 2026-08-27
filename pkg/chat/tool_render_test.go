@@ -8,16 +8,16 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/anthropic"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/deepseek"
-	"github.com/Arbureva/ice-adk/pkg/openai"
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/anthropic"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/deepseek"
+	"github.com/arbureva/arcus/pkg/openai"
+	"github.com/arbureva/arcus/pkg/tool"
 
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/anthropic"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/deepseek"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/anthropic"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/deepseek"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 )
 
 type echoArgs struct {

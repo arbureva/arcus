@@ -1,15 +1,15 @@
-// Package deepseek registers the DeepSeek transcript for IceADK's agent layer.
+// Package deepseek registers the DeepSeek transcript for Arcus's agent layer.
 // Blank-import it to enable agent.NewTranscript(adapter.Deepseek, ...):
 //
-//	import _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/deepseek"
+//	import _ "github.com/arbureva/arcus/pkg/agent/transcripts/deepseek"
 package deepseek
 
 import (
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	sdk "github.com/Arbureva/ice-adk/pkg/deepseek"
-	"github.com/Arbureva/ice-adk/pkg/ecode"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	"github.com/arbureva/arcus/pkg/chat"
+	sdk "github.com/arbureva/arcus/pkg/deepseek"
+	"github.com/arbureva/arcus/pkg/ecode"
 )
 
 func init() {

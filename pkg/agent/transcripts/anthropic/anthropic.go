@@ -1,15 +1,15 @@
-// Package anthropic registers the Anthropic transcript for IceADK's agent
+// Package anthropic registers the Anthropic transcript for Arcus's agent
 // layer. Blank-import it to enable agent.NewTranscript(adapter.Anthropic, ...):
 //
-//	import _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/anthropic"
+//	import _ "github.com/arbureva/arcus/pkg/agent/transcripts/anthropic"
 package anthropic
 
 import (
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	sdk "github.com/Arbureva/ice-adk/pkg/anthropic"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/ecode"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	sdk "github.com/arbureva/arcus/pkg/anthropic"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/ecode"
 )
 
 func init() {

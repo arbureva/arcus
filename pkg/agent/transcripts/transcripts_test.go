@@ -4,17 +4,17 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	ansdk "github.com/Arbureva/ice-adk/pkg/anthropic"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	dssdk "github.com/Arbureva/ice-adk/pkg/deepseek"
-	oasdk "github.com/Arbureva/ice-adk/pkg/openai"
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	ansdk "github.com/arbureva/arcus/pkg/anthropic"
+	"github.com/arbureva/arcus/pkg/chat"
+	dssdk "github.com/arbureva/arcus/pkg/deepseek"
+	oasdk "github.com/arbureva/arcus/pkg/openai"
+	"github.com/arbureva/arcus/pkg/tool"
 
-	_ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/anthropic"
-	_ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/deepseek"
-	_ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai"
+	_ "github.com/arbureva/arcus/pkg/agent/transcripts/anthropic"
+	_ "github.com/arbureva/arcus/pkg/agent/transcripts/deepseek"
+	_ "github.com/arbureva/arcus/pkg/agent/transcripts/openai"
 )
 
 func toolTurn() (*chat.Completion, []agent.ToolReturn) {

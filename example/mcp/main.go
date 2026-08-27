@@ -10,14 +10,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/mcp"
-	"github.com/Arbureva/ice-adk/pkg/openai"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/mcp"
+	"github.com/arbureva/arcus/pkg/openai"
 
-	_ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
+	_ "github.com/arbureva/arcus/pkg/agent/transcripts/openai"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 )
 
 func main() {

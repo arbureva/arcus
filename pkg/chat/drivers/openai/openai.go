@@ -1,7 +1,7 @@
-// Package openai registers the OpenAI driver for IceADK's chat layer.
+// Package openai registers the OpenAI driver for Arcus's chat layer.
 // Blank-import it to enable provider adapter.OpenAI:
 //
-//	import _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
+//	import _ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 package openai
 
 import (
@@ -10,11 +10,11 @@ import (
 	"errors"
 	"io"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/ecode"
-	sdk "github.com/Arbureva/ice-adk/pkg/openai"
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/ecode"
+	sdk "github.com/arbureva/arcus/pkg/openai"
+	"github.com/arbureva/arcus/pkg/tool"
 )
 
 func init() {

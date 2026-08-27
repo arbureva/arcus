@@ -6,8 +6,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/chat"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/chat"
 )
 
 // Agent-level chunk kinds, emitted by RunStream in addition to the chat-level

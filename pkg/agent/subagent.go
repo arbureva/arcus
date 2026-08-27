@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/tool"
 )
 
 // subAgentArgs is the argument shape a delegating model fills in when it calls
@@ -15,7 +15,7 @@ type subAgentArgs struct {
 }
 
 // AsTool wraps an Agent as a tool.Tool, which is all multi-agent coordination
-// amounts to in IceADK: a coordinator agent delegates by function-calling into
+// amounts to in Arcus: a coordinator agent delegates by function-calling into
 // sub-agents, exactly as it calls any other tool. Because the result is a plain
 // tool.Tool it composes with everything else — put it in a tool.Set, fold it
 // into a toolbox.Box namespace, or hand it to yet another agent.

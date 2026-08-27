@@ -5,9 +5,9 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/tool"
 )
 
 // ToolReturn pairs a model-issued tool call with the result the host produced
@@ -74,7 +74,7 @@ var (
 // intended to be called from an implementation package's init, so applications
 // select providers with blank imports:
 //
-//	import _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai"
+//	import _ "github.com/arbureva/arcus/pkg/agent/transcripts/openai"
 //
 // It panics on a nil factory or a duplicate registration.
 func RegisterTranscript(p adapter.Provider, f TranscriptFactory) {

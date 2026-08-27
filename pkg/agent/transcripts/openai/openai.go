@@ -1,15 +1,15 @@
-// Package openai registers the OpenAI transcript for IceADK's agent layer.
+// Package openai registers the OpenAI transcript for Arcus's agent layer.
 // Blank-import it to enable agent.NewTranscript(adapter.OpenAI, ...):
 //
-//	import _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai"
+//	import _ "github.com/arbureva/arcus/pkg/agent/transcripts/openai"
 package openai
 
 import (
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/ecode"
-	sdk "github.com/Arbureva/ice-adk/pkg/openai"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/ecode"
+	sdk "github.com/arbureva/arcus/pkg/openai"
 )
 
 func init() {

@@ -11,8 +11,8 @@
 // implementation:
 //
 //	import (
-//	    _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
-//	    _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai"
+//	    _ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
+//	    _ "github.com/arbureva/arcus/pkg/agent/transcripts/openai"
 //	)
 //
 //	ag := agent.New(cli, agent.WithTools(tools))
@@ -21,7 +21,7 @@
 //	out, _ := ag.Run(ctx, tr)
 //	fmt.Println(out.Final.Text)
 //
-// As everywhere else in IceADK, the caller hands the agent the provider's
+// As everywhere else in Arcus, the caller hands the agent the provider's
 // native request value and therefore always knows exactly which protocol it is
 // speaking; the agent only owns the loop.
 package agent

@@ -141,7 +141,7 @@ func (t *pipeTransport) answerServerRequest(msg *rpcResponse) {
 	if msg.Method == "ping" {
 		out.Result = struct{}{}
 	} else {
-		out.Error = &RPCError{Code: -32601, Message: "method not supported by ice-adk client"}
+		out.Error = &RPCError{Code: -32601, Message: "method not supported by arcus client"}
 	}
 	b, err := json.Marshal(out)
 	if err != nil {

@@ -1,10 +1,10 @@
 <div align="center">
 
-# ❄️ IceADK
+# ❄️ Arcus
 
 **一个标准、易用的 Go 语言 Agent 开发套件（ADK）。**
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/Arbureva/ice-adk.svg)](https://pkg.go.dev/github.com/Arbureva/ice-adk) [![Go Version](https://img.shields.io/github/go-mod/go-version/Arbureva/ice-adk)](go.mod) [![Go Report Card](https://goreportcard.com/badge/github.com/Arbureva/ice-adk)](https://goreportcard.com/report/github.com/Arbureva/ice-adk) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Dependencies](https://img.shields.io/badge/dependencies-0-success) ![Status](https://img.shields.io/badge/status-active%20development-orange)
+[![Go Reference](https://pkg.go.dev/badge/github.com/arbureva/arcus.svg)](https://pkg.go.dev/github.com/arbureva/arcus) [![Go Version](https://img.shields.io/github/go-mod/go-version/Arbureva/arcus)](go.mod) [![Go Report Card](https://goreportcard.com/badge/github.com/arbureva/arcus)](https://goreportcard.com/report/github.com/arbureva/arcus) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Dependencies](https://img.shields.io/badge/dependencies-0-success) ![Status](https://img.shields.io/badge/status-active%20development-orange)
 
 ![OpenAI](https://img.shields.io/badge/OpenAI-supported-412991) ![Anthropic](https://img.shields.io/badge/Anthropic-supported-D4A27F) ![DeepSeek](https://img.shields.io/badge/DeepSeek-supported-4D6BFE)
 
@@ -14,7 +14,7 @@
 
 ---
 
-IceADK 为 Go 应用提供一种统一、干净的方式来对接大语言模型。它把每家厂商**原生、忠于协议的客户端**，与一个对请求、响应、流式、工具调用做归一化的**统一 chat 层**配合在一起——业务代码只写一次，即可在 OpenAI、Anthropic、DeepSeek 之间无改动切换。
+Arcus 为 Go 应用提供一种统一、干净的方式来对接大语言模型。它把每家厂商**原生、忠于协议的客户端**，与一个对请求、响应、流式、工具调用做归一化的**统一 chat 层**配合在一起——业务代码只写一次，即可在 OpenAI、Anthropic、DeepSeek 之间无改动切换。
 
 它采用 `database/sql` 的驱动模型：核心不导入任何厂商包，应用通过空白导入（blank import）按需启用驱动。整个套件**仅依赖标准库——零第三方依赖。**
 
@@ -30,7 +30,7 @@ out, _ := chat.Result(msg)
 fmt.Println(out.Text)
 ```
 
-## ✨ 为什么选择 IceADK
+## ✨ 为什么选择 Arcus
 
 - **原生包，不做有损抽象。** `pkg/openai`、`pkg/anthropic`、`pkg/deepseek` 各自直接讲自己的线缆协议（content block、SSE 事件、`reasoning_content` 等）。既可单独使用，也可通过统一层使用——由你决定，而非框架强加。
 - **一个入口，三家厂商。** `pkg/chat` 按 `Provider` 路由请求，返回归一化结果。换模型是改配置，不是重写代码。
@@ -42,7 +42,7 @@ fmt.Println(out.Text)
 ## 📦 安装
 
 ```bash
-go get github.com/Arbureva/ice-adk
+go get github.com/arbureva/arcus
 ```
 
 需要 Go 1.25+。
@@ -72,13 +72,13 @@ go get github.com/Arbureva/ice-adk
 
 ```go
 import (
-    "github.com/Arbureva/ice-adk/pkg/adapter"
-    "github.com/Arbureva/ice-adk/pkg/chat"
-    "github.com/Arbureva/ice-adk/pkg/openai"
+    "github.com/arbureva/arcus/pkg/adapter"
+    "github.com/arbureva/arcus/pkg/chat"
+    "github.com/arbureva/arcus/pkg/openai"
 
-    _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"   // 注册 openai 驱动
-    _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/anthropic"
-    _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/deepseek"
+    _ "github.com/arbureva/arcus/pkg/chat/drivers/openai"   // 注册 openai 驱动
+    _ "github.com/arbureva/arcus/pkg/chat/drivers/anthropic"
+    _ "github.com/arbureva/arcus/pkg/chat/drivers/deepseek"
 )
 
 cli := chat.New()
@@ -153,8 +153,8 @@ for _, call := range out.ToolCalls {
 
 ```go
 import (
-    "github.com/Arbureva/ice-adk/pkg/agent"
-    _ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai" // 与驱动同款：空白导入即启用
+    "github.com/arbureva/arcus/pkg/agent"
+    _ "github.com/arbureva/arcus/pkg/agent/transcripts/openai" // 与驱动同款：空白导入即启用
 )
 
 bot := agent.New(cli, agent.WithTools(tools), agent.WithMaxSteps(8))
@@ -211,11 +211,11 @@ git := cli.Command("git", "检查仓库。",
 - [`example/agent-multi`](example/agent-multi) —— 多 Agent 协同：用 `agent.AsTool` 包装专家 Agent。
 - [`example/mcp`](example/mcp) —— Agent 通过 stdio 驱动 MCP 文件系统服务器。
 - [`example/skill-toolbox`](example/skill-toolbox) —— 从 `SKILL.md` 加载 skill，配合 toolbox 渐进式披露。
-- [`example/http`](example/http) —— 接入模板：在 HTTP 服务中使用 ice-adk。标准 OpenAI 兼容层（`/v1/chat/completions`，Cherry Studio、LobeChat 等现成客户端直连，"模型名"即服务路由）+ 服务端管会话的自有 API，四个服务（只挂 Skills / 只挂 CLI / 只挂 MCP / 多 Agent 协同）、配置文件启动、SSE 流式。想把 SDK 接进自己后端的，从这里开始抄。
+- [`example/http`](example/http) —— 接入模板：在 HTTP 服务中使用 arcus。标准 OpenAI 兼容层（`/v1/chat/completions`，Cherry Studio、LobeChat 等现成客户端直连，"模型名"即服务路由）+ 服务端管会话的自有 API，四个服务（只挂 Skills / 只挂 CLI / 只挂 MCP / 多 Agent 协同）、配置文件启动、SSE 流式。想把 SDK 接进自己后端的，从这里开始抄。
 
 ## 🗺 路线图
 
-IceADK 致力于成为一个完整、标准的 Go 语言 ADK。所有上层能力都包裹同一个 `tool.Tool` 接口与 `chat` 入口——引入它们无需改动已基于 IceADK 写好的代码。
+Arcus 致力于成为一个完整、标准的 Go 语言 ADK。所有上层能力都包裹同一个 `tool.Tool` 接口与 `chat` 入口——引入它们无需改动已基于 Arcus 写好的代码。
 
 - [x] 原生厂商客户端 —— OpenAI · Anthropic · DeepSeek
 - [x] 带驱动注册的统一 chat 入口

@@ -1,4 +1,4 @@
-// Package chat is IceADK's unified chat entry point. Business code talks only
+// Package chat is Arcus's unified chat entry point. Business code talks only
 // to chat with adapter types and never selects a provider package directly:
 //
 //   - Input is an adapter.Request whose Data carries the provider-native
@@ -15,10 +15,10 @@
 // imports. The chat package itself imports no provider package.
 //
 //	import (
-//		"github.com/Arbureva/ice-adk/pkg/chat"
-//		"github.com/Arbureva/ice-adk/pkg/openai"
-//		_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"   // registers the openai driver
-//		_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/deepseek" // registers the deepseek driver
+//		"github.com/arbureva/arcus/pkg/chat"
+//		"github.com/arbureva/arcus/pkg/openai"
+//		_ "github.com/arbureva/arcus/pkg/chat/drivers/openai"   // registers the openai driver
+//		_ "github.com/arbureva/arcus/pkg/chat/drivers/deepseek" // registers the deepseek driver
 //	)
 //
 //	cli := chat.New()

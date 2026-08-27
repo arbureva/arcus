@@ -14,7 +14,7 @@ import (
 )
 
 // HTTPEndpoint connects to a remote MCP server over the Streamable HTTP
-// transport (client side only — IceADK never exposes an HTTP service). Build
+// transport (client side only — Arcus never exposes an HTTP service). Build
 // one with HTTP, optionally set Header/Client, then hand it to Dial.
 type HTTPEndpoint struct {
 	URL string

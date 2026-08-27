@@ -21,7 +21,7 @@ import (
 	"strings"
 	"sync/atomic"
 
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/tool"
 )
 
 // transport is the wire strategy behind a Client. Implementations: pipe
@@ -72,7 +72,7 @@ type Client struct {
 
 // Dial connects to the endpoint and runs the MCP initialize handshake.
 func Dial(ctx context.Context, ep Endpoint, opts ...Option) (*Client, error) {
-	c := &Client{clientInfo: Info{Name: "ice-adk", Version: "1"}}
+	c := &Client{clientInfo: Info{Name: "arcus", Version: "1"}}
 	for _, o := range opts {
 		o(c)
 	}

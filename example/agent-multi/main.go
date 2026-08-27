@@ -1,4 +1,4 @@
-// Command agent-multi shows multi-agent coordination the ice-adk way: a
+// Command agent-multi shows multi-agent coordination the arcus way: a
 // sub-agent is just another tool. agent.AsTool wraps a specialist Agent as a
 // tool.Tool; when the coordinator delegates, the seed function builds a fresh
 // Transcript so every delegation runs in its own isolated context. No routing
@@ -9,14 +9,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/openai"
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/openai"
+	"github.com/arbureva/arcus/pkg/tool"
 
-	_ "github.com/Arbureva/ice-adk/pkg/agent/transcripts/openai"
-	_ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
+	_ "github.com/arbureva/arcus/pkg/agent/transcripts/openai"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 )
 
 const model = "gpt-oss:20b"

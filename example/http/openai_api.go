@@ -20,10 +20,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/agent"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/openai"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/agent"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/openai"
 )
 
 func registerOpenAI(mux *http.ServeMux, cfg *Config, services map[string]*service) {
@@ -39,7 +39,7 @@ func registerOpenAI(mux *http.ServeMux, cfg *Config, services map[string]*servic
 			Data   []model `json:"data"`
 		}{Object: "list"}
 		for name := range services {
-			out.Data = append(out.Data, model{ID: name, Object: "model", Created: time.Now().Unix(), OwnedBy: "ice-adk"})
+			out.Data = append(out.Data, model{ID: name, Object: "model", Created: time.Now().Unix(), OwnedBy: "arcus"})
 		}
 		writeJSON(w, http.StatusOK, out)
 	}))

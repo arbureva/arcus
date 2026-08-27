@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/openai"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/openai"
 )
 
 func OpenAiChat(cli *chat.Client) (*adapter.MessageAdapter, error) {

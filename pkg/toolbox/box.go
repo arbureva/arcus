@@ -30,8 +30,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Arbureva/ice-adk/pkg/skill"
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/skill"
+	"github.com/arbureva/arcus/pkg/tool"
 )
 
 // DefaultMetaName is the name of the meta-tool the model calls to unfold a

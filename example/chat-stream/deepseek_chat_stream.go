@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/chat"
-	"github.com/Arbureva/ice-adk/pkg/deepseek"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/chat"
+	"github.com/arbureva/arcus/pkg/deepseek"
 )
 
 // DeepseekChatStream opens a streaming completion against DeepSeek. Two

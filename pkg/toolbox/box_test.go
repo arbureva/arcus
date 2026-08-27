@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Arbureva/ice-adk/pkg/skill"
-	"github.com/Arbureva/ice-adk/pkg/tool"
+	"github.com/arbureva/arcus/pkg/skill"
+	"github.com/arbureva/arcus/pkg/tool"
 )
 
 func stub(name string) tool.Tool {

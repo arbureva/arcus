@@ -6,7 +6,7 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/adapter"
 )
 
 // Conn is a live, configured connection to one provider. Drivers return it from
@@ -45,7 +45,7 @@ var (
 // be called from a driver package's init, so applications select providers
 // with blank imports:
 //
-//	import _ "github.com/Arbureva/ice-adk/pkg/chat/drivers/openai"
+//	import _ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 //
 // Register panics on a nil driver or a duplicate registration.
 func Register(p adapter.Provider, d Driver) {

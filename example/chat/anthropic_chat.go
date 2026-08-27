@@ -4,9 +4,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/Arbureva/ice-adk/pkg/adapter"
-	"github.com/Arbureva/ice-adk/pkg/anthropic"
-	"github.com/Arbureva/ice-adk/pkg/chat"
+	"github.com/arbureva/arcus/pkg/adapter"
+	"github.com/arbureva/arcus/pkg/anthropic"
+	"github.com/arbureva/arcus/pkg/chat"
 )
 
 func AnthropicChat(cli *chat.Client) (*adapter.MessageAdapter, error) {
