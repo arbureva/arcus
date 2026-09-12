@@ -33,6 +33,13 @@ type Message struct {
 	ToolCalls  []ToolCall
 	ToolCallID string
 	Refusal    string
+
+	// ReasoningContent is the chain-of-thought returned by reasoning models on
+	// OpenAI-compatible endpoints (DeepSeek, Qwen, GLM, vLLM, OpenRouter, ...).
+	// The wire field is "reasoning_content", or "reasoning" on some gateways.
+	// Decode-only: every such API rejects it on input, so it is never
+	// marshalled back.
+	ReasoningContent string
 }
 
 type messageWire struct {
@@ -42,6 +49,10 @@ type messageWire struct {
 	ToolCalls  []ToolCall      `json:"tool_calls,omitempty"`
 	ToolCallID string          `json:"tool_call_id,omitempty"`
 	Refusal    string          `json:"refusal,omitempty"`
+
+	// Decode-only, see Message.ReasoningContent.
+	ReasoningContent string `json:"reasoning_content,omitempty"`
+	Reasoning        string `json:"reasoning,omitempty"`
 }
 
 func (m Message) MarshalJSON() ([]byte, error) {
@@ -79,6 +90,7 @@ func (m *Message) UnmarshalJSON(b []byte) error {
 	m.ToolCalls = w.ToolCalls
 	m.ToolCallID = w.ToolCallID
 	m.Refusal = w.Refusal
+	m.ReasoningContent = firstNonEmpty(w.ReasoningContent, w.Reasoning)
 	if len(w.Content) > 0 && string(w.Content) != "null" {
 		switch w.Content[0] {
 		case '"':
@@ -164,6 +176,22 @@ func (r *ChatCompletion) Text() string {
 		return ""
 	}
 	return r.Choices[0].Message.Content
+}
+
+// Reasoning returns the chain-of-thought of the first choice, for reasoning
+// models on OpenAI-compatible endpoints ("" when the model returns none).
+func (r *ChatCompletion) Reasoning() string {
+	if len(r.Choices) == 0 {
+		return ""
+	}
+	return r.Choices[0].Message.ReasoningContent
+}
+
+func firstNonEmpty(a, b string) string {
+	if a != "" {
+		return a
+	}
+	return b
 }
 
 // FinishReason returns the finish reason of the first choice.

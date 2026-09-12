@@ -15,13 +15,20 @@ import (
 //	ChunkToolCall -> Data is *ToolCallChunk  (a tool-call fragment; args streamed raw)
 //	ChunkStop     -> Data is string          (stop / finish reason)
 //	ChunkUsage    -> Data is *Usage          (token accounting)
+//	ChunkDone     -> Data is the native result (last chunk of a successful turn)
 //	ChunkError    -> Data is error           (terminal stream error)
+//
+// ChunkDone carries the provider-native message the driver accumulated over the
+// stream (*openai.ChatCompletion, *anthropic.Message, *deepseek.ChatCompletion).
+// It is what keeps the streaming path wire-exact — Anthropic thinking blocks
+// and their signatures only survive a round trip through it.
 const (
 	ChunkText     = "text"
 	ChunkThinking = "thinking"
 	ChunkToolCall = "tool_call"
 	ChunkStop     = "stop"
 	ChunkUsage    = "usage"
+	ChunkDone     = "done"
 	ChunkError    = "error"
 )
 
@@ -134,6 +141,9 @@ func AsStop(msg *adapter.ChunkMessageAdapter) (string, bool) {
 }
 func AsUsage(msg *adapter.ChunkMessageAdapter) (*Usage, bool) {
 	return chunkAs[*Usage](msg, ChunkUsage)
+}
+func AsDone(msg *adapter.ChunkMessageAdapter) (interface{}, bool) {
+	return chunkAs[interface{}](msg, ChunkDone)
 }
 func AsError(msg *adapter.ChunkMessageAdapter) (error, bool) {
 	return chunkAs[error](msg, ChunkError)

@@ -138,7 +138,19 @@ func (s *Skill) resolve(rel string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	// Resolve symlinks on both sides before comparing: a lexical check alone
+	// lets a link inside the skill directory point anywhere on disk. The root
+	// needs it too — /var is a link to /private/var on macOS, and comparing an
+	// unresolved root against a resolved path would reject everything.
+	if real, err := filepath.EvalSymlinks(root); err == nil {
+		root = real
+	}
 	p := filepath.Clean(filepath.Join(root, rel))
+	// A path that doesn't exist yet can't be resolved; the lexical form is
+	// already confined, and the read then fails with the usual ENOENT.
+	if real, err := filepath.EvalSymlinks(p); err == nil {
+		p = real
+	}
 	if p != root && !strings.HasPrefix(p, root+string(filepath.Separator)) {
 		return "", fmt.Errorf("skill %q: path %q escapes the skill directory", s.Name, rel)
 	}

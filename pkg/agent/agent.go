@@ -167,13 +167,15 @@ func (a *Agent) Run(ctx context.Context, tr Transcript) (*Outcome, error) {
 			a.hooks.OnCompletion(step, comp)
 		}
 
+		// Record every assistant turn, final one included: a Transcript reused
+		// for a follow-up must contain the answer it just gave.
+		tr.Assistant(comp)
 		if len(comp.ToolCalls) == 0 {
 			out.Final = comp
 			out.Steps = append(out.Steps, Step{Completion: comp})
 			return out, nil
 		}
 
-		tr.Assistant(comp)
 		returns := a.dispatch(ctx, step, comp.ToolCalls)
 		tr.ToolResults(returns)
 		out.Steps = append(out.Steps, Step{Completion: comp, Returns: returns})

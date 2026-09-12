@@ -61,11 +61,13 @@ func (a *Agent) RunStream(ctx context.Context, tr Transcript) (<-chan adapter.Ch
 			if a.hooks.OnCompletion != nil {
 				a.hooks.OnCompletion(step, comp)
 			}
+			// Record every assistant turn, final one included: a Transcript
+			// reused for a follow-up must contain the answer it just gave.
+			tr.Assistant(comp)
 			if len(comp.ToolCalls) == 0 {
 				return // final answer already streamed through
 			}
 
-			tr.Assistant(comp)
 			returns := a.dispatch(ctx, step, comp.ToolCalls)
 			for i := range returns {
 				if !emit(adapter.ChunkMessageAdapter{Kind: ChunkToolResult, Data: &returns[i]}) {
@@ -88,6 +90,7 @@ func (a *Agent) consume(ch <-chan adapter.ChunkMessageAdapter, emit func(adapter
 		reasoning strings.Builder
 		stop      string
 		usage     *chat.Usage
+		raw       interface{}
 		calls     = map[int]*pendingCall{}
 		failed    bool
 	)
@@ -127,6 +130,12 @@ func (a *Agent) consume(ch <-chan adapter.ChunkMessageAdapter, emit func(adapter
 			if u, ok := chat.AsUsage(&c); ok {
 				usage = u
 			}
+		case chat.ChunkDone:
+			// The native result: transcripts prefer it over the normalized
+			// fields, which is what preserves thinking blocks across turns.
+			if r, ok := chat.AsDone(&c); ok {
+				raw = r
+			}
 		case chat.ChunkError:
 			failed = true
 		}
@@ -140,6 +149,7 @@ func (a *Agent) consume(ch <-chan adapter.ChunkMessageAdapter, emit func(adapter
 		Reasoning:  reasoning.String(),
 		StopReason: stop,
 		Usage:      usage,
+		Raw:        raw,
 	}
 	if len(calls) > 0 {
 		idx := make([]int, 0, len(calls))

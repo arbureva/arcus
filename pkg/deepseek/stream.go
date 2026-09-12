@@ -74,6 +74,12 @@ func (s *Stream) Recv() (*ChatCompletionChunk, error) {
 	}
 
 	data, err := s.readData()
+	if err == io.EOF {
+		// The body ended without the "[DONE]" sentinel. That is a truncated
+		// stream unless the model already told us why it stopped — some
+		// compatible gateways just close after the final chunk.
+		err = s.endErr()
+	}
 	if err != nil {
 		s.err = err
 		return nil, err
@@ -193,6 +199,18 @@ func (s *Stream) mergeToolCall(ch *Choice, frag ToolCall) {
 		dst.Function.Name += frag.Function.Name
 	}
 	dst.Function.Arguments += frag.Function.Arguments
+}
+
+// endErr classifies a body that ended without "[DONE]": clean io.EOF if a
+// finish reason arrived, ErrUnexpectedEOF otherwise. A caller that treats the
+// latter as a normal end would hand a half-written answer to the user.
+func (s *Stream) endErr() error {
+	for i := range s.acc.Choices {
+		if s.acc.Choices[i].FinishReason != "" {
+			return io.EOF
+		}
+	}
+	return fmt.Errorf("deepseek: stream ended mid-response: %w", io.ErrUnexpectedEOF)
 }
 
 // Completion returns the completion accumulated so far. After Recv returns

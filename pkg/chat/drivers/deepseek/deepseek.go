@@ -50,15 +50,25 @@ func toConfig(cfg any) (sdk.Config, error) {
 
 type conn struct{ client *sdk.Client }
 
+// nativeRequest returns a private copy of the caller's native request. The
+// copy matters: the driver appends rendered tools (and sets Stream), and doing
+// that in place would corrupt a request the caller reuses — every call would
+// advertise the tools again.
 func nativeRequest(req any) (*sdk.Request, error) {
+	var r sdk.Request
 	switch v := req.(type) {
 	case *sdk.Request:
-		return v, nil
+		if v == nil {
+			return nil, ecode.TypeMismatch
+		}
+		r = *v
 	case sdk.Request:
-		return &v, nil
+		r = v
 	default:
 		return nil, ecode.TypeMismatch
 	}
+	r.Tools = append([]sdk.Tool(nil), r.Tools...)
+	return &r, nil
 }
 
 // applyTools renders adapter.Request.Tools into the native function-tool list
@@ -138,6 +148,9 @@ func (c *conn) Stream(ctx context.Context, req adapter.Request, emit func(adapte
 	for {
 		chunk, err := stream.Recv()
 		if errors.Is(err, io.EOF) {
+			// Hand the accumulated native result up so the streaming path is
+			// as lossless as the non-streaming one.
+			emit(adapter.ChunkMessageAdapter{Kind: chat.ChunkDone, Data: stream.Completion()})
 			return nil
 		}
 		if err != nil {

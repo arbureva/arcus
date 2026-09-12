@@ -48,6 +48,9 @@ func (c *mockConn) Stream(_ context.Context, req adapter.Request, emit func(adap
 	if err != nil {
 		return err
 	}
+	if comp.Reasoning != "" {
+		emit(adapter.ChunkMessageAdapter{Kind: chat.ChunkThinking, Data: comp.Reasoning})
+	}
 	if comp.Text != "" {
 		emit(adapter.ChunkMessageAdapter{Kind: chat.ChunkText, Data: comp.Text})
 	}
@@ -60,6 +63,9 @@ func (c *mockConn) Stream(_ context.Context, req adapter.Request, emit func(adap
 			Data: &chat.ToolCallChunk{Index: i, ArgsDelta: args[len(args)/2:]}})
 	}
 	emit(adapter.ChunkMessageAdapter{Kind: chat.ChunkStop, Data: "stop"})
+	if comp.Raw != nil {
+		emit(adapter.ChunkMessageAdapter{Kind: chat.ChunkDone, Data: comp.Raw})
+	}
 	return nil
 }
 

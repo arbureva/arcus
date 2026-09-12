@@ -77,6 +77,11 @@ func (s *MessageStream) Recv() (StreamEvent, error) {
 	}
 
 	evtName, data, err := s.readEvent()
+	if err == io.EOF {
+		// No message_stop: the body was cut short mid-response. Reporting a
+		// clean end here would pass a half-written answer off as complete.
+		err = fmt.Errorf("anthropic: stream ended mid-response: %w", io.ErrUnexpectedEOF)
+	}
 	if err != nil {
 		s.err = err
 		return StreamEvent{}, err
