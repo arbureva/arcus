@@ -17,6 +17,8 @@ import (
 	// register drivers (the only thing business code blank-imports)
 	_ "github.com/arbureva/arcus/pkg/chat/drivers/anthropic"
 	_ "github.com/arbureva/arcus/pkg/chat/drivers/deepseek"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/glm"
+	_ "github.com/arbureva/arcus/pkg/chat/drivers/mimo"
 	_ "github.com/arbureva/arcus/pkg/chat/drivers/openai"
 )
 
@@ -33,7 +35,8 @@ func sse(w http.ResponseWriter, lines ...string) {
 
 func TestDriversRegistered(t *testing.T) {
 	got := chat.Providers()
-	want := map[adapter.Provider]bool{adapter.OpenAI: true, adapter.Anthropic: true, adapter.Deepseek: true}
+	want := map[adapter.Provider]bool{adapter.OpenAI: true, adapter.Anthropic: true, adapter.Deepseek: true,
+		adapter.Mimo: true, adapter.GLM: true}
 	for _, p := range got {
 		delete(want, p)
 	}

@@ -6,7 +6,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/arbureva/arcus.svg)](https://pkg.go.dev/github.com/arbureva/arcus) [![Go Version](https://img.shields.io/github/go-mod/go-version/Arbureva/arcus)](go.mod) [![Go Report Card](https://goreportcard.com/badge/github.com/arbureva/arcus)](https://goreportcard.com/report/github.com/arbureva/arcus) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Dependencies](https://img.shields.io/badge/dependencies-0-success) ![Status](https://img.shields.io/badge/status-active%20development-orange)
 
-![OpenAI](https://img.shields.io/badge/OpenAI-supported-412991) ![Anthropic](https://img.shields.io/badge/Anthropic-supported-D4A27F) ![DeepSeek](https://img.shields.io/badge/DeepSeek-supported-4D6BFE)
+![OpenAI](https://img.shields.io/badge/OpenAI-supported-412991) ![Anthropic](https://img.shields.io/badge/Anthropic-supported-D4A27F) ![DeepSeek](https://img.shields.io/badge/DeepSeek-supported-4D6BFE) ![MiMo](https://img.shields.io/badge/MiMo-supported-FF6900) ![GLM](https://img.shields.io/badge/GLM-supported-3859FF)
 
 **English** · [简体中文](README_ch.md)
 
@@ -32,7 +32,7 @@ fmt.Println(out.Text)
 
 ## ✨ Why Arcus
 
-- **Native packages, no leaky abstraction.** `pkg/openai`, `pkg/anthropic`, and `pkg/deepseek` each speak their wire protocol directly (content blocks, SSE events, `reasoning_content`, …). Use them standalone, or through the unified layer — your choice, not the framework's.
+- **Native packages, no leaky abstraction.** `pkg/openai`, `pkg/anthropic`, `pkg/deepseek`, `pkg/mimo`, and `pkg/glm` each speak their wire protocol directly (content blocks, SSE events, `reasoning_content`, …). Use them standalone, or through the unified layer — your choice, not the framework's.
 - **One entry point, three providers.** `pkg/chat` routes a request by `Provider` and hands back a normalized result. Switching models is a config change, not a rewrite.
 - **Driver-registry wiring.** Providers register themselves from `init()`; you enable them with blank imports. No build tags, no central switch statement, no edits to the core to add a backend.
 - **Tools that work everywhere.** Declare a tool once against a tiny `func(ctx, json.RawMessage) (*tool.Result, error)` interface. Each driver renders it into that provider's native tool shape — the same tool set drives function-calling on all three.
@@ -52,12 +52,12 @@ Requires Go 1.25+.
 | Package | Role |
 | --- | --- |
 | `pkg/chat` | Unified entry point — `Client`, `Chat`, `ChatStream`, `Result`, chunk helpers. Imports no provider package. |
-| `pkg/chat/drivers/{openai,anthropic,deepseek}` | Provider bridges. Blank-import to enable; each registers itself from `init()`. |
+| `pkg/chat/drivers/{openai,anthropic,deepseek,mimo,glm}` | Provider bridges. Blank-import to enable; each registers itself from `init()`. |
 | `pkg/adapter` | Neutral envelopes — `Request`, `MessageAdapter`, `ChunkMessageAdapter`, and the `Provider` constants. |
-| `pkg/openai` · `pkg/anthropic` · `pkg/deepseek` | Native protocol clients, usable on their own. |
+| `pkg/openai` · `pkg/anthropic` · `pkg/deepseek` · `pkg/mimo` · `pkg/glm` | Native protocol clients, usable on their own. |
 | `pkg/tool` | Provider-agnostic tool abstraction — `Tool`, `Func`, `Reflect`, `Set`, `Result`. |
 | `pkg/agent` | The agent loop — `Run` / `RunStream`, hooks, sub-agents via `AsTool`. Imports no provider package. |
-| `pkg/agent/transcripts/{openai,anthropic,deepseek}` | Native-message transcripts. Blank-import to enable; each registers itself from `init()`. |
+| `pkg/agent/transcripts/{openai,anthropic,deepseek,mimo,glm}` | Native-message transcripts. Blank-import to enable; each registers itself from `init()`. |
 | `pkg/toolbox` | Progressive disclosure — fold tool groups behind one meta-tool the model opens on demand. |
 | `pkg/skill` | Skills — instruction packs with optional tools, from code (`skill.New`) or `SKILL.md` directories (`skill.LoadDir`). |
 | `pkg/mcp` | MCP client (stdio & Streamable HTTP) — remote tools surfaced as ordinary `tool.Tool` values. |
@@ -217,7 +217,7 @@ Runnable examples live under [`example/`](example/):
 
 Arcus aims to be a complete, standard ADK for Go. Every higher-level capability wraps the same `tool.Tool` interface and `chat` entry point — adopting them requires no change to code already written against Arcus.
 
-- [x] Native provider clients — OpenAI · Anthropic · DeepSeek
+- [x] Native provider clients — OpenAI · Anthropic · DeepSeek · Xiaomi MiMo · Zhipu GLM
 - [x] Unified chat entry point with driver registry
 - [x] Streaming with normalized chunks
 - [x] Tool calling

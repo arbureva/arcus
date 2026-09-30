@@ -6,7 +6,7 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/arbureva/arcus.svg)](https://pkg.go.dev/github.com/arbureva/arcus) [![Go Version](https://img.shields.io/github/go-mod/go-version/Arbureva/arcus)](go.mod) [![Go Report Card](https://goreportcard.com/badge/github.com/arbureva/arcus)](https://goreportcard.com/report/github.com/arbureva/arcus) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) ![Dependencies](https://img.shields.io/badge/dependencies-0-success) ![Status](https://img.shields.io/badge/status-active%20development-orange)
 
-![OpenAI](https://img.shields.io/badge/OpenAI-supported-412991) ![Anthropic](https://img.shields.io/badge/Anthropic-supported-D4A27F) ![DeepSeek](https://img.shields.io/badge/DeepSeek-supported-4D6BFE)
+![OpenAI](https://img.shields.io/badge/OpenAI-supported-412991) ![Anthropic](https://img.shields.io/badge/Anthropic-supported-D4A27F) ![DeepSeek](https://img.shields.io/badge/DeepSeek-supported-4D6BFE) ![MiMo](https://img.shields.io/badge/MiMo-supported-FF6900) ![GLM](https://img.shields.io/badge/GLM-supported-3859FF)
 
 [English](README.md) · **简体中文**
 
@@ -32,7 +32,7 @@ fmt.Println(out.Text)
 
 ## ✨ 为什么选择 Arcus
 
-- **原生包，不做有损抽象。** `pkg/openai`、`pkg/anthropic`、`pkg/deepseek` 各自直接讲自己的线缆协议（content block、SSE 事件、`reasoning_content` 等）。既可单独使用，也可通过统一层使用——由你决定，而非框架强加。
+- **原生包，不做有损抽象。** `pkg/openai`、`pkg/anthropic`、`pkg/deepseek`、`pkg/mimo`、`pkg/glm` 各自直接讲自己的线缆协议（content block、SSE 事件、`reasoning_content` 等）。既可单独使用，也可通过统一层使用——由你决定，而非框架强加。
 - **一个入口，三家厂商。** `pkg/chat` 按 `Provider` 路由请求，返回归一化结果。换模型是改配置，不是重写代码。
 - **驱动注册式接入。** 厂商驱动在 `init()` 中自注册，你用空白导入启用。无 build tag，无中心化的 switch，新增后端无需改动核心。
 - **工具一次声明，处处可用。** 用极简的 `func(ctx, json.RawMessage) (*tool.Result, error)` 接口声明一个工具，各驱动会把它渲染成对应厂商的原生工具格式——同一套工具集驱动三家的 function calling。
@@ -52,12 +52,12 @@ go get github.com/arbureva/arcus
 | 包 | 职责 |
 | --- | --- |
 | `pkg/chat` | 统一入口——`Client`、`Chat`、`ChatStream`、`Result` 及 chunk 辅助函数。不导入任何厂商包。 |
-| `pkg/chat/drivers/{openai,anthropic,deepseek}` | 厂商驱动桥接。空白导入即启用，各自在 `init()` 中自注册。 |
+| `pkg/chat/drivers/{openai,anthropic,deepseek,mimo,glm}` | 厂商驱动桥接。空白导入即启用，各自在 `init()` 中自注册。 |
 | `pkg/adapter` | 中立信封——`Request`、`MessageAdapter`、`ChunkMessageAdapter` 以及 `Provider` 常量。 |
-| `pkg/openai` · `pkg/anthropic` · `pkg/deepseek` | 原生协议客户端，可独立使用。 |
+| `pkg/openai` · `pkg/anthropic` · `pkg/deepseek` · `pkg/mimo` · `pkg/glm` | 原生协议客户端，可独立使用。 |
 | `pkg/tool` | 与厂商无关的工具抽象——`Tool`、`Func`、`Reflect`、`Set`、`Result`。 |
 | `pkg/agent` | Agent 循环——`Run` / `RunStream`、钩子、通过 `AsTool` 实现子 Agent。不导入任何厂商包。 |
-| `pkg/agent/transcripts/{openai,anthropic,deepseek}` | 原生消息 Transcript。空白导入即启用，各自在 `init()` 中自注册。 |
+| `pkg/agent/transcripts/{openai,anthropic,deepseek,mimo,glm}` | 原生消息 Transcript。空白导入即启用，各自在 `init()` 中自注册。 |
 | `pkg/toolbox` | 渐进式披露——把成组工具折叠在一个元工具背后，模型按需打开。 |
 | `pkg/skill` | Skills——带可选工具的指令包，可用代码构建（`skill.New`）或从 `SKILL.md` 目录加载（`skill.LoadDir`）。 |
 | `pkg/mcp` | MCP 客户端（stdio 与 Streamable HTTP）——远程工具以普通 `tool.Tool` 的形态呈现。 |
@@ -217,7 +217,7 @@ git := cli.Command("git", "检查仓库。",
 
 Arcus 致力于成为一个完整、标准的 Go 语言 ADK。所有上层能力都包裹同一个 `tool.Tool` 接口与 `chat` 入口——引入它们无需改动已基于 Arcus 写好的代码。
 
-- [x] 原生厂商客户端 —— OpenAI · Anthropic · DeepSeek
+- [x] 原生厂商客户端 —— OpenAI · Anthropic · DeepSeek · Xiaomi MiMo · Zhipu GLM
 - [x] 带驱动注册的统一 chat 入口
 - [x] 归一化 chunk 的流式
 - [x] 工具调用

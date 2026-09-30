@@ -6,6 +6,8 @@ const (
 	OpenAI    Provider = "openai"
 	Anthropic Provider = "anthropic"
 	Deepseek  Provider = "deepseek"
+	Mimo      Provider = "mimo"
+	GLM       Provider = "glm"
 )
 
 type Request struct {
