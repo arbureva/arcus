@@ -45,6 +45,10 @@ type Agent struct {
 	tools    Tools
 	maxSteps int
 	hooks    Hooks
+
+	resultKeep, resultMax int                 // WithToolResultWindow
+	gate                  func(step int) bool // WithStepGate
+	wrapUp                string              // WithWrapUp
 }
 
 // Option configures an Agent.
@@ -150,26 +154,17 @@ func (a *Agent) dispatch(ctx context.Context, step int, calls []chat.ToolCall) [
 
 // Run executes the loop until the model stops calling tools or the step budget
 // is exhausted. On ErrMaxSteps the partial Outcome (with all steps and usage so
-// far) is still returned alongside the error.
+// far) is still returned alongside the error. With WithWrapUp an exhausted
+// budget instead ends in one tool-less turn and a nil error.
 func (a *Agent) Run(ctx context.Context, tr Transcript) (*Outcome, error) {
 	out := &Outcome{}
-	for step := 1; step <= a.maxSteps; step++ {
-		msg, err := a.cli.Chat(ctx, tr.Request(a.requestTools()))
+	step := 1
+	for ; step <= a.maxSteps && a.proceed(step); step++ {
+		a.elide(tr)
+		comp, err := a.complete(ctx, tr, a.requestTools(), step, out)
 		if err != nil {
 			return out, err
 		}
-		comp, ok := chat.Result(msg)
-		if !ok {
-			return out, errors.New("agent: driver returned a non-Completion result")
-		}
-		out.addUsage(comp.Usage)
-		if a.hooks.OnCompletion != nil {
-			a.hooks.OnCompletion(step, comp)
-		}
-
-		// Record every assistant turn, final one included: a Transcript reused
-		// for a follow-up must contain the answer it just gave.
-		tr.Assistant(comp)
 		if len(comp.ToolCalls) == 0 {
 			out.Final = comp
 			out.Steps = append(out.Steps, Step{Completion: comp})
@@ -184,7 +179,38 @@ func (a *Agent) Run(ctx context.Context, tr Transcript) (*Outcome, error) {
 			return out, err
 		}
 	}
-	return out, ErrMaxSteps
+	if a.wrapUp == "" {
+		return out, ErrMaxSteps
+	}
+	tr.User(a.wrapUp)
+	a.elide(tr)
+	comp, err := a.complete(ctx, tr, nil, step, out)
+	if err != nil {
+		return out, err
+	}
+	out.Final = comp
+	out.Steps = append(out.Steps, Step{Completion: comp})
+	return out, nil
+}
+
+// complete runs one non-streaming model turn and records it in tr.
+func (a *Agent) complete(ctx context.Context, tr Transcript, tools []interface{}, step int, out *Outcome) (*chat.Completion, error) {
+	msg, err := a.cli.Chat(ctx, tr.Request(tools))
+	if err != nil {
+		return nil, err
+	}
+	comp, ok := chat.Result(msg)
+	if !ok {
+		return nil, errors.New("agent: driver returned a non-Completion result")
+	}
+	out.addUsage(comp.Usage)
+	if a.hooks.OnCompletion != nil {
+		a.hooks.OnCompletion(step, comp)
+	}
+	// Record every assistant turn, final one included: a Transcript reused
+	// for a follow-up must contain the answer it just gave.
+	tr.Assistant(comp)
+	return comp, nil
 }
 
 var _ Tools = (*tool.Set)(nil)

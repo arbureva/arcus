@@ -72,9 +72,20 @@ func (t *transcript) ToolResults(returns []agent.ToolReturn) {
 	}
 }
 
+// ElideToolResults implements agent.ToolResultEliding.
+func (t *transcript) ElideToolResults(keep, max int) {
+	agent.ElideTail(len(t.msgs), func(i int) *string {
+		if t.msgs[i].Role != sdk.RoleTool {
+			return nil
+		}
+		return &t.msgs[i].Content
+	}, keep, max)
+}
+
 func (t *transcript) Request(tools []interface{}) adapter.Request {
 	r := t.req
 	r.Messages = t.msgs
 	r.Tools = append([]sdk.Tool(nil), t.req.Tools...)
 	return adapter.Request{Provider: adapter.GLM, Data: &r, Tools: tools}
 }
+var _ agent.ToolResultEliding = (*transcript)(nil)

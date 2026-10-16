@@ -5,6 +5,8 @@
 package anthropic
 
 import (
+	"encoding/json"
+
 	"github.com/arbureva/arcus/pkg/adapter"
 	"github.com/arbureva/arcus/pkg/agent"
 	sdk "github.com/arbureva/arcus/pkg/anthropic"
@@ -75,9 +77,39 @@ func (t *transcript) ToolResults(returns []agent.ToolReturn) {
 	t.msgs = append(t.msgs, sdk.UserBlocks(blocks...))
 }
 
+// ElideToolResults implements agent.ToolResultEliding. Results ride as
+// tool_result blocks inside user messages; only the plain-text form (what
+// ToolResults writes) is elided — block-array content is left alone.
+func (t *transcript) ElideToolResults(keep, max int) {
+	type ref struct{ msg, block int }
+	var refs []ref
+	for i := range t.msgs {
+		for j, b := range t.msgs[i].Content {
+			if b.Type == sdk.BlockToolResult {
+				refs = append(refs, ref{i, j})
+			}
+		}
+	}
+	texts := make([]*string, len(refs))
+	for k, r := range refs {
+		var s string
+		if json.Unmarshal(t.msgs[r.msg].Content[r.block].Content, &s) == nil {
+			texts[k] = &s
+		}
+	}
+	agent.ElideTail(len(refs), func(k int) *string { return texts[k] }, keep, max)
+	for k, r := range refs {
+		if texts[k] != nil {
+			raw, _ := json.Marshal(*texts[k])
+			t.msgs[r.msg].Content[r.block].Content = raw
+		}
+	}
+}
+
 func (t *transcript) Request(tools []interface{}) adapter.Request {
 	r := t.req
 	r.Messages = t.msgs
 	r.Tools = append([]sdk.Tool(nil), t.req.Tools...)
 	return adapter.Request{Provider: adapter.Anthropic, Data: &r, Tools: tools}
 }
+var _ agent.ToolResultEliding = (*transcript)(nil)

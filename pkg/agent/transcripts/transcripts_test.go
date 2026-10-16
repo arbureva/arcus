@@ -2,6 +2,7 @@ package transcripts_test
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/arbureva/arcus/pkg/adapter"
@@ -133,5 +134,51 @@ func TestDeepseekTranscriptStripsReasoning(t *testing.T) {
 func TestTranscriptTypeMismatch(t *testing.T) {
 	if _, err := agent.NewTranscript(adapter.OpenAI, 42); err == nil {
 		t.Fatal("expected type mismatch")
+	}
+}
+
+// Every built-in transcript must shrink old tool results and leave the newest.
+func TestTranscriptsElideOldToolResults(t *testing.T) {
+	long := strings.Repeat("x", 500)
+	for _, c := range []struct {
+		p      adapter.Provider
+		native any
+		texts  func(any) []string
+	}{
+		{adapter.OpenAI, &oasdk.Request{Model: "m"}, func(m any) (out []string) {
+			for _, x := range m.([]oasdk.Message) {
+				if x.Role == oasdk.RoleTool {
+					out = append(out, x.Content)
+				}
+			}
+			return
+		}},
+		{adapter.Anthropic, &ansdk.Request{Model: "m"}, func(m any) (out []string) {
+			for _, x := range m.([]ansdk.Message) {
+				for _, b := range x.Content {
+					if b.Type == ansdk.BlockToolResult {
+						var s string
+						_ = json.Unmarshal(b.Content, &s)
+						out = append(out, s)
+					}
+				}
+			}
+			return
+		}},
+	} {
+		tr, err := agent.NewTranscript(c.p, c.native)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, id := range []string{"a", "b"} {
+			call := chat.ToolCall{ID: id, Name: "bash", Args: json.RawMessage(`{}`)}
+			tr.Assistant(&chat.Completion{ToolCalls: []chat.ToolCall{call}})
+			tr.ToolResults([]agent.ToolReturn{{Call: call, Result: tool.Text(long)}})
+		}
+		tr.(agent.ToolResultEliding).ElideToolResults(1, 100)
+		got := c.texts(tr.Messages())
+		if len(got) != 2 || len(got[0]) >= len(long) || got[1] != long {
+			t.Fatalf("%s: lens = %d, %d", c.p, len(got[0]), len(got[1]))
+		}
 	}
 }

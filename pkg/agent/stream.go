@@ -32,7 +32,8 @@ func AsToolReturn(msg *adapter.ChunkMessageAdapter) (*ToolReturn, bool) {
 // when a model turn ends in tool calls, the agent assembles them from the
 // fragments, dispatches them, emits one ChunkToolResult per call, and starts
 // the next turn on the same channel. The channel closes when the run ends —
-// after the final answer, on ErrMaxSteps, or after a terminal ChunkError.
+// after the final answer, on ErrMaxSteps (or after the WithWrapUp turn), or
+// after a terminal ChunkError.
 func (a *Agent) RunStream(ctx context.Context, tr Transcript) (<-chan adapter.ChunkMessageAdapter, error) {
 	out := make(chan adapter.ChunkMessageAdapter)
 	go func() {
@@ -47,16 +48,17 @@ func (a *Agent) RunStream(ctx context.Context, tr Transcript) (<-chan adapter.Ch
 		}
 		fail := func(err error) { emit(adapter.ChunkMessageAdapter{Kind: chat.ChunkError, Data: err}) }
 
-		for step := 1; step <= a.maxSteps; step++ {
-			ch, err := a.cli.ChatStream(ctx, tr.Request(a.requestTools()))
+		// turn streams one model turn and records it in tr; ok=false means
+		// the run is over (consumer gone or an error already emitted).
+		turn := func(tools []interface{}, step int) (*chat.Completion, bool) {
+			ch, err := a.cli.ChatStream(ctx, tr.Request(tools))
 			if err != nil {
 				fail(err)
-				return
+				return nil, false
 			}
-
 			comp, ok := a.consume(ch, emit)
-			if !ok { // consumer gone or terminal stream error already emitted
-				return
+			if !ok {
+				return nil, false
 			}
 			if a.hooks.OnCompletion != nil {
 				a.hooks.OnCompletion(step, comp)
@@ -64,6 +66,16 @@ func (a *Agent) RunStream(ctx context.Context, tr Transcript) (<-chan adapter.Ch
 			// Record every assistant turn, final one included: a Transcript
 			// reused for a follow-up must contain the answer it just gave.
 			tr.Assistant(comp)
+			return comp, true
+		}
+
+		step := 1
+		for ; step <= a.maxSteps && a.proceed(step); step++ {
+			a.elide(tr)
+			comp, ok := turn(a.requestTools(), step)
+			if !ok {
+				return
+			}
 			if len(comp.ToolCalls) == 0 {
 				return // final answer already streamed through
 			}
@@ -76,7 +88,13 @@ func (a *Agent) RunStream(ctx context.Context, tr Transcript) (<-chan adapter.Ch
 			}
 			tr.ToolResults(returns)
 		}
-		fail(ErrMaxSteps)
+		if a.wrapUp == "" {
+			fail(ErrMaxSteps)
+			return
+		}
+		tr.User(a.wrapUp)
+		a.elide(tr)
+		turn(nil, step)
 	}()
 	return out, nil
 }
