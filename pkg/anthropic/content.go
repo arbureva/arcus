@@ -42,6 +42,34 @@ type ContentBlock struct {
 	Data string `json:"data,omitempty"`
 }
 
+// MarshalJSON keeps the fields a block type requires even when they are empty.
+// The flat struct needs omitempty for everything else, but an echoed thinking
+// block with empty text would lose "thinking" entirely, and Anthropic-compatible
+// servers that deserialize strictly (DeepSeek) reject the whole request with 422
+// "missing field `thinking`".
+func (b ContentBlock) MarshalJSON() ([]byte, error) {
+	type plain ContentBlock
+	switch b.Type {
+	case BlockThinking:
+		return json.Marshal(struct {
+			Type      string `json:"type"`
+			Thinking  string `json:"thinking"`
+			Signature string `json:"signature"`
+		}{b.Type, b.Thinking, b.Signature})
+	case BlockText:
+		return json.Marshal(struct {
+			Type string `json:"type"`
+			Text string `json:"text"`
+		}{b.Type, b.Text})
+	case BlockRedactedThinking:
+		return json.Marshal(struct {
+			Type string `json:"type"`
+			Data string `json:"data"`
+		}{b.Type, b.Data})
+	}
+	return json.Marshal(plain(b))
+}
+
 // ImageSource describes an image block payload: base64 bytes or a URL.
 type ImageSource struct {
 	Type      string `json:"type"` // "base64" or "url"
