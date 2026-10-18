@@ -65,11 +65,7 @@ func (t *transcript) Assistant(comp *chat.Completion) {
 
 func (t *transcript) ToolResults(returns []agent.ToolReturn) {
 	for _, r := range returns {
-		content := r.Result.Content
-		if r.Result.IsError && content == "" {
-			content = "tool failed"
-		}
-		t.msgs = append(t.msgs, sdk.ToolMessage(r.Call.ID, content))
+		t.msgs = append(t.msgs, sdk.ToolMessage(r.Call.ID, r.Result.TextOnly()))
 	}
 }
 

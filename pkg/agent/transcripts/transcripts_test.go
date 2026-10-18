@@ -182,3 +182,26 @@ func TestTranscriptsElideOldToolResults(t *testing.T) {
 		}
 	}
 }
+
+// 带图的结果：Anthropic 进 tool_result 的 content 数组（text + base64 image），
+// 其它协议只回文字并注明看不了图。
+func TestToolResultImages(t *testing.T) {
+	call := chat.ToolCall{ID: "c1", Name: "view_image", Args: json.RawMessage(`{}`)}
+	ret := []agent.ToolReturn{{Call: call, Result: tool.Text("preview").WithImage("image/png", []byte{1, 2, 3})}}
+
+	tr, _ := agent.NewTranscript(adapter.Anthropic, &ansdk.Request{Model: "m", MaxTokens: 1})
+	tr.Assistant(&chat.Completion{ToolCalls: []chat.ToolCall{call}})
+	tr.ToolResults(ret)
+	got, _ := json.Marshal(tr.Messages().([]ansdk.Message)[1])
+	want := `{"role":"user","content":[{"type":"tool_result","tool_use_id":"c1","content":[{"type":"text","text":"preview"},{"type":"image","source":{"type":"base64","media_type":"image/png","data":"AQID"}}]}]}`
+	if string(got) != want {
+		t.Fatalf("anthropic tool_result =\n%s\nwant\n%s", got, want)
+	}
+
+	tr, _ = agent.NewTranscript(adapter.OpenAI, &oasdk.Request{Model: "m"})
+	tr.Assistant(&chat.Completion{ToolCalls: []chat.ToolCall{call}})
+	tr.ToolResults(ret)
+	if c := tr.Messages().([]oasdk.Message)[1].Content; c != "preview\n"+tool.ImagesUnsupported {
+		t.Fatalf("openai tool content = %q", c)
+	}
+}

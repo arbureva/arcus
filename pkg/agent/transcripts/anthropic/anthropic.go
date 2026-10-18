@@ -5,6 +5,7 @@
 package anthropic
 
 import (
+	"encoding/base64"
 	"encoding/json"
 
 	"github.com/arbureva/arcus/pkg/adapter"
@@ -72,9 +73,26 @@ func (t *transcript) ToolResults(returns []agent.ToolReturn) {
 	// turn ride back together in a single user message.
 	blocks := make([]sdk.ContentBlock, 0, len(returns))
 	for _, r := range returns {
-		blocks = append(blocks, sdk.ToolResultText(r.Call.ID, r.Result.Content, r.Result.IsError))
+		blocks = append(blocks, toolResult(r))
 	}
 	t.msgs = append(t.msgs, sdk.UserBlocks(blocks...))
+}
+
+// toolResult carries images as base64 image blocks in the tool_result content
+// array; text-only results keep the plain-string form ElideToolResults trims.
+func toolResult(r agent.ToolReturn) sdk.ContentBlock {
+	if len(r.Result.Images) == 0 {
+		return sdk.ToolResultText(r.Call.ID, r.Result.Content, r.Result.IsError)
+	}
+	var parts []sdk.ContentBlock
+	if r.Result.Content != "" {
+		parts = append(parts, sdk.TextBlock(r.Result.Content))
+	}
+	for _, img := range r.Result.Images {
+		parts = append(parts, sdk.ImageBase64Block(img.MIME, base64.StdEncoding.EncodeToString(img.Data)))
+	}
+	b, _ := sdk.ToolResultBlocks(r.Call.ID, parts, r.Result.IsError) // blocks of strings always marshal
+	return b
 }
 
 // ElideToolResults implements agent.ToolResultEliding. Results ride as
